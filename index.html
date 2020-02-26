@@ -1,20 +1,758 @@
-
+<!DOCTYPE html>
 <html>
-  <title>Following the masters of three d</title>
-  
-  
-  <body>
-    
+<head>
+<script type="text/javascript" src="https://getfirebug.com/firebug-lite-debug.js"></script>
+<meta name="description" content="CS4406 Computer Graphics - Assignment #4" />
+  	<meta charset="utf-8" />
+	<title>Assignment #4 for CS4406 Computer Graphics</title>
+	<style>
+		#container {
+			background: #ffffff;
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+<meta charset=utf-8 />
+
+</head>
+<body>
+<div id="container" width="400" height="400"></div>
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+
+<script src="js/OrbitControls.js"></script>
+
+
+
+<!-- jQuery code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+
+
+
+	
+
+	<script type="text/javascript">
+      console.clear();
+	// set the scene size
+	var WIDTH = 700, HEIGHT = 680;
+
+	// set some camera attributes
+	var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 1, FAR = 1000;
+
+	// get the DOM element to attach to
+	var $container = $('#container');
+	//$('#container').css('background-color', 'lightgrey');
+
+	// create a WebGL renderer, camera, and a scene
+	// NOTE: for the assignment in Unit 4 where you need to use a
+	// texture, or in any other assignment where a texture is required
+	// you should deactivate the Detector and use ONLY the
+	// CanvasRenderer.  There are some issues in using waht are
+	// called Cross Domain images for
+	// for textures.   You can get more details by looking up
+	// WebGL and CORS using Google search.  I have included some
+	// code below that will
+	// get around this issue that you can use.
+
+	var renderer = new THREE.WebGLRenderer();
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+
+
+
+	var scene = new THREE.Scene();
+	scene.background = new THREE.Color( 'lightgrey' );
+
+	var clock = new THREE.Clock();
+	var camera = new THREE.PerspectiveCamera(VIEW_ANGLE,ASPECT,NEAR,FAR);
+
+	// the camera starts at 0,0,0 so pull it back for some assignments
+	// you may need to adjust this value
+	// some distance to make the scene visible properly
+	camera.position.z = 250;
+
+	// add the camera to the scene
+	scene.add(camera)
+
+	// set up the camera controls.  Please keep in mind that what
+	// this does is move the entire scene around.
+	// because the entire scene is moving the position of the
+	// camera and lights in relation to objects within
+	// the scene doesn't change so the lighting on the surface of
+	// the object(s) will not change either
+	var cameraControls = new THREE.OrbitControls(camera,
+																							renderer.domElement);
+	cameraControls.addEventListener( 'mousemove', renderer );
+
+	// start the renderer
+	renderer.setSize(WIDTH, HEIGHT);
+
+	// attach the render-supplied DOM element
+	$container.append(renderer.domElement);
+
+	// -------------------------------------------------------
+	//  Example of Code that you can adapt to get around the
+	// issue of Cross-Domain issues and
+  //  CORS restrictions using textures.  We have this
+	// problem when using jsbin.com as a
+  //  development environment becuase we cannot load
+	// texture images to the local server.
+  //  Rather we need to pull them from location using a
+	// web URL.  You can use the images
+  //  that we have put on the uopeopleweb.com site along
+	// with the following code (modified
+	//  of course for your particular program)
+	//
+	//  NOTE: that what this code does is create a new
+	// Texture object called Texture1 and loads
+	//	the texture image into the object.
+	//
+	// var Texture1 = new THREE.Texture();
+  // var loader = new THREE.ImageLoader();
+	//
+	// loader.addEventListener( 'load', function ( event ) {
+	// 		Texture1.image = event.content;
+	// 		Texture1.needsUpdate = true;
+  // 	} );
+	//
+  // 	loader.load( 'http://uopeopleweb.com/js/paper.jpg' );
+
+	// ---------------------------------------------------------
+	//  END OF THE STANDARD CODE FOR THE ASSIGNMENT
+	//  Following this is where you must place your own custom
+	// code to complete the assignment
+	// ---------------------------------------------------------
+
+	// here is the setup for the point light with
+	// parameter settings for color and intensity
+	var pntLtColor = 0xffffff;
+	var pntIntensity = 0.5;
+	var pntLight = new THREE.PointLight(pntLtColor,
+																			pntIntensity);
+	pntLight.position.set(0, 75, 60);
+	scene.add(pntLight);
+
+	// setup for the ambient lighting
+	var ambLight = new THREE.AmbientLight(0x222222);
+	scene.add(ambLight);
+
+
+	// the setup for the hemisphere lighting for the
+	// sky, ground, and intensity
+	var hghltSky = 0xffb6c1;
+	var hghlGround = 0xff69b4;
+	var hghlIntensity = 0.4;
+	var hemiLight = new THREE.HemisphereLight(hghltSky,
+																						hghlGround,
+																						hghlIntensity);
+	scene.add(hemiLight);
+
+	// setup for the diretional lighting with
+	// parameters for color and intensity
+	var dLtColor = 0xffc0cb;
+	var dLtIntensity = 1;
+	var dLight = new THREE.DirectionalLight(dLtColor,
+																					dLtIntensity);
+	dLight.castShadow = true;
+	dLight.position.set(0, 10, 0);
+	dLight.target.position.set(0, 0, 0);
+	scene.add(dLight);
+
+	// setup a plane to to show the shadow
+	// when rotating it so that the cylinders are behind the
+	// plane, the cylinders cannot be seen.  I wanted to make the
+	// plane transparent but then it took away from the shadow effect
+	// my next option was to make create an autotransparency like
+	// on this website
+	// https://answers.unity.com/questions/44815/make-object-transparent-when-between-camera-and-pl.html
+	// but time did not allow it at the moment
+	var planeGeometry = new THREE.PlaneGeometry( 100, 100, 200 );
+	var planeMaterial = new THREE.MeshStandardMaterial( { color: 0x00ff00,
+																												side: THREE.DoubleSide } )
+	var plane = new THREE.Mesh( planeGeometry, planeMaterial );
+	plane.position.set(0, 0, -100);
+	plane.receiveShadow = true;
+	scene.add( plane );
+
+
+	// cylinder setup
+	var cylOne_Radius_Top = 10;
+	var cylTwo_Radius_Top = 10;
+	var cylThree_Radius_Top = 12;
+	var cylFour_Radius_Top = 11;
+
+	var cylOne_Radius_Bottom = 10;
+	var cylTwo_Radius_Bottom = 10;
+	var cylThree_Radius_Bottom = 12;
+	var cylFour_Radius_Bottom = 11;
+
+
+	var cylOne_Height = 30;
+	var cylTwo_Height = 25;
+	var cylThree_Height = 27;
+	var cylFour_Height = 29;
+
+	var cylOne_RadialSegs = 26;
+	var cylTwo_RadialSegs = 20;
+	var cylThree_RadialSegs = 30;
+	var cylFour_RadialSegs = 17;
+
+	var cylOne_HeightSegs = 2;
+	var cylTwo_HeightSegs = 1;
+	var cylThree_HeightSegs = 4;
+	var cylFour_HeightSegs = 1;
+
+	var cylOne_OpenEnded = false;
+	var cylTwo_OpenEnded = false;
+	var cylThree_OpenEnded  = false;
+	var cylFour_OpenEnded  = false;
+
+	var cylOne_ThetaStart = 4.8;
+	var cylTwo_ThetaStart = 27.8;
+	var cylThree_ThetaStart  = 9.3;
+	var cylFour_ThetaStart  = 120.3;
+
+	var cylOne_ThetaLen = Math.PI*2;
+	var cylTwo_ThetaLen = Math.PI*2;
+	var cylThree_ThetaLen  = Math.PI*3;
+	var cylFour_ThetaLen  = Math.PI*2;
+
+
+	//var radius = 22, tube = 12, radSegments = 20
+	//var tubeSegs = 60, arc = Math.PI * 2;
+	var cylinderOneMat = new THREE.MeshPhongMaterial(
+						{color: 0xffc0cb,
+							opacity: 0.3,
+							transparent: true
+						});
+
+	// cylinder one mesh and geometry
+	// this one is the transparent cylinder
+	var cylinderOne = new THREE.Mesh(
+		new THREE.CylinderGeometry(cylOne_Radius_Top,
+															cylOne_Radius_Bottom,
+															cylOne_Height,
+															cylOne_RadialSegs,
+															cylOne_HeightSegs,
+															cylOne_OpenEnded,
+															cylOne_ThetaStart,
+															cylOne_ThetaLen),
+														  cylinderOneMat);
+
+	cylinderOne.position.set(60, 40, 0);
+
+	// here is where we load the texture which is
+	// one of my art pieces
+	var txtrLoader = new THREE.TextureLoader();
+	var cylinderOneImg = new Image();
+	cylinderOneImg.crossOrigin = "imgbox";
+	cylinderOneImg.src = "https://thumbs2.imgbox.com/d6/b9/2McfdZTh_t.jpg";
+	var cylinderArt = cylinderOneImg.src
+	var cylMat = new THREE.MeshBasicMaterial({color: 0xffc0cb,
+														map: txtrLoader.load(cylinderArt)})
+
+	// cylinder two material, mesh, and geometry
+	var cylinderTwoMat = new THREE.MeshNormalMaterial();
+	var cylinderTwo = new THREE.Mesh(
+				new THREE.CylinderGeometry(cylTwo_Radius_Top,
+																	cylTwo_Radius_Bottom,
+																	cylTwo_Height,
+																	cylTwo_RadialSegs,
+																	cylTwo_HeightSegs,
+																	cylTwo_OpenEnded,
+																	cylTwo_ThetaStart,
+																	cylTwo_ThetaLen),
+																  cylMat);
+		// this one is the textured cylinder
+		// which is positioned to the left
+		cylinderTwo.position.set(-30, 40, 0);
+
+		// cylinder three material
+		var cylinderThreeMat = new THREE.MeshPhongMaterial({color: 0xff69b4,
+
+																												envMap: scene.bakcground,
+																												combine: THREE.MixOperation,
+																												reflectivity: .99
+
+																										});
+
+		// cylinder three mesh and geometry and position
+		// this is the shiny pink cylinder
+		var cylinderThree = new THREE.Mesh(
+			new THREE.CylinderGeometry(cylThree_Radius_Top,
+																cylThree_Radius_Bottom,
+																cylThree_Height,
+																cylThree_RadialSegs,
+																cylThree_HeightSegs,
+																cylThree_OpenEnded,
+																cylThree_ThetaStart,
+																cylThree_ThetaLen),
+																cylinderThreeMat);
+	 cylinderThree.format = THREE.RBGFormat;
+	 cylinderThree.mapping = THREE.CubeRefractionMapping;
+	 //scene.background = cylinderThree;
+	 cylinderThree.position.set(-40, -40, 0);
+
+	 // cylinder four material.  Lambert gave it a nice
+	 // solid color
+	 cylFourMat = new THREE.MeshLambertMaterial({color: 0xbbff00,
+		 																					side: THREE.DoubleSide,
+		 																					shininess: 0
+																						});
+
+		// cylinder four mesh, geometry, and position
+		// this is the green cylinder
+		var cylinderFour = new THREE.Mesh(
+			new THREE.CylinderGeometry(cylFour_Radius_Top,
+																cylFour_Radius_Bottom,
+																cylFour_Height,
+																cylFour_RadialSegs,
+																cylFour_HeightSegs,
+																cylFour_OpenEnded,
+																cylFour_ThetaStart,
+																cylFour_ThetaLen),
+																cylFourMat);
+	  cylinderFour.position.set(60, -40, 0);
+
+		// var dLtColor2 = 0xffc0cb;
+		// var dLtIntensity2 = 0;
+		// var dLight2 = new THREE.DirectionalLight(dLtColor,
+		// 																				dLtIntensity);
+
+		// add the objects and the texture to the scene
+		scene.add(cylinderArt);
+		scene.add(cylinderOne);
+		scene.add(cylinderTwo);
+		scene.add(cylinderThree);
+		scene.add(cylinderFour);
+
+		// dLight2.castShadow = false;
+		// dLight2.position.set(0, 0, 0);
+		// dLight2.target = cylinderTwo;
+		// scene.add(dLight2.target);
+
+	// ----------------------------------------------------------------------------------------
+	// END OF YOUR CUSTOM CODE FOR THE ASSIGNMENT
+	// The rendering functions that follow are standard and can be
+	// used for this assignment.
+	// You are welcome to customize them or create your own if you
+	// desire, however, you can
+	// simply use the code provided.
+	//
+
+	// Standard functions for rendering the scene.  Notice how we
+	// have the animate function
+	// which submits a call to requestAnimationFrame to
+	// call animate.   This creates a loop
+	// that will render the scene again whenever something within
+	// the scene changes.
+
+	function animate() {
+		requestAnimationFrame(animate);
+		// Here I decided to rotate at different speeds and directions
+		// or not including a direction as I did with cylinderFour
+		cylinderOne.rotation.y += 0.01;
+		cylinderOne.rotation.x += 0.01;
+		cylinderOne.rotation.z += 0.02;
+		cylinderTwo.rotation.y -= 0.01;
+		cylinderTwo.rotation.x -= 0.01;
+		cylinderTwo.rotation.z += 0.002;
+		cylinderThree.rotation.y += 0.01;
+		cylinderThree.rotation.x -= 0.01;
+		cylinderThree.rotation.z += 0.004;
+		cylinderFour.rotation.y -= 0.01;
+		cylinderFour.rotation.x += 0.01;
+		cylinderFour.rotation.z += 0.01;
+		// call the render function to update the
+		// camera and scene
+		render();
+	}
+
+	function render() {
+ 		cameraControls.update();
+		renderer.render(scene, camera);
+	}
+	animate();
+	</script>
   </body>
-  <h1>Who will I follow first?</h1>
-  
-  <style>
-    body {
-      background-color:green;
-      color:#fff;
-      text-align:center;
-    
-  </style>
-  
-  
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="https://getfirebug.com/firebug-lite-debug.js"></script>
+<meta name="description" content="CS4406 Computer Graphics - Assignment #4" />
+  	<meta charset="utf-8" />
+	<title>Assignment #4 for CS4406 Computer Graphics</title>
+	<style>
+		#container {
+			background: #ffffff;
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+<meta charset=utf-8 />
+
+</head>
+<body>
+<div id="container" width="400" height="400"></div>
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+
+<script src="js/OrbitControls.js"></script>
+
+
+
+<!-- jQuery code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+
+
+
+	
+
+	<script type="text/javascript">
+      console.clear();
+	// set the scene size
+	var WIDTH = 700, HEIGHT = 680;
+
+	// set some camera attributes
+	var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 1, FAR = 1000;
+
+	// get the DOM element to attach to
+	var $container = $('#container');
+	//$('#container').css('background-color', 'lightgrey');
+
+	// create a WebGL renderer, camera, and a scene
+	// NOTE: for the assignment in Unit 4 where you need to use a
+	// texture, or in any other assignment where a texture is required
+	// you should deactivate the Detector and use ONLY the
+	// CanvasRenderer.  There are some issues in using waht are
+	// called Cross Domain images for
+	// for textures.   You can get more details by looking up
+	// WebGL and CORS using Google search.  I have included some
+	// code below that will
+	// get around this issue that you can use.
+
+	var renderer = new THREE.WebGLRenderer();
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+
+
+
+	var scene = new THREE.Scene();
+	scene.background = new THREE.Color( 'lightgrey' );
+
+	var clock = new THREE.Clock();
+	var camera = new THREE.PerspectiveCamera(VIEW_ANGLE,ASPECT,NEAR,FAR);
+
+	// the camera starts at 0,0,0 so pull it back for some assignments
+	// you may need to adjust this value
+	// some distance to make the scene visible properly
+	camera.position.z = 250;
+
+	// add the camera to the scene
+	scene.add(camera)
+
+	// set up the camera controls.  Please keep in mind that what
+	// this does is move the entire scene around.
+	// because the entire scene is moving the position of the
+	// camera and lights in relation to objects within
+	// the scene doesn't change so the lighting on the surface of
+	// the object(s) will not change either
+	var cameraControls = new THREE.OrbitControls(camera,
+																							renderer.domElement);
+	cameraControls.addEventListener( 'mousemove', renderer );
+
+	// start the renderer
+	renderer.setSize(WIDTH, HEIGHT);
+
+	// attach the render-supplied DOM element
+	$container.append(renderer.domElement);
+
+	// -------------------------------------------------------
+	//  Example of Code that you can adapt to get around the
+	// issue of Cross-Domain issues and
+  //  CORS restrictions using textures.  We have this
+	// problem when using jsbin.com as a
+  //  development environment becuase we cannot load
+	// texture images to the local server.
+  //  Rather we need to pull them from location using a
+	// web URL.  You can use the images
+  //  that we have put on the uopeopleweb.com site along
+	// with the following code (modified
+	//  of course for your particular program)
+	//
+	//  NOTE: that what this code does is create a new
+	// Texture object called Texture1 and loads
+	//	the texture image into the object.
+	//
+	// var Texture1 = new THREE.Texture();
+  // var loader = new THREE.ImageLoader();
+	//
+	// loader.addEventListener( 'load', function ( event ) {
+	// 		Texture1.image = event.content;
+	// 		Texture1.needsUpdate = true;
+  // 	} );
+	//
+  // 	loader.load( 'http://uopeopleweb.com/js/paper.jpg' );
+
+	// ---------------------------------------------------------
+	//  END OF THE STANDARD CODE FOR THE ASSIGNMENT
+	//  Following this is where you must place your own custom
+	// code to complete the assignment
+	// ---------------------------------------------------------
+
+	// here is the setup for the point light with
+	// parameter settings for color and intensity
+	var pntLtColor = 0xffffff;
+	var pntIntensity = 0.5;
+	var pntLight = new THREE.PointLight(pntLtColor,
+																			pntIntensity);
+	pntLight.position.set(0, 75, 60);
+	scene.add(pntLight);
+
+	// setup for the ambient lighting
+	var ambLight = new THREE.AmbientLight(0x222222);
+	scene.add(ambLight);
+
+
+	// the setup for the hemisphere lighting for the
+	// sky, ground, and intensity
+	var hghltSky = 0xffb6c1;
+	var hghlGround = 0xff69b4;
+	var hghlIntensity = 0.4;
+	var hemiLight = new THREE.HemisphereLight(hghltSky,
+																						hghlGround,
+																						hghlIntensity);
+	scene.add(hemiLight);
+
+	// setup for the diretional lighting with
+	// parameters for color and intensity
+	var dLtColor = 0xffc0cb;
+	var dLtIntensity = 1;
+	var dLight = new THREE.DirectionalLight(dLtColor,
+																					dLtIntensity);
+	dLight.castShadow = true;
+	dLight.position.set(0, 10, 0);
+	dLight.target.position.set(0, 0, 0);
+	scene.add(dLight);
+
+	// setup a plane to to show the shadow
+	// when rotating it so that the cylinders are behind the
+	// plane, the cylinders cannot be seen.  I wanted to make the
+	// plane transparent but then it took away from the shadow effect
+	// my next option was to make create an autotransparency like
+	// on this website
+	// https://answers.unity.com/questions/44815/make-object-transparent-when-between-camera-and-pl.html
+	// but time did not allow it at the moment
+	var planeGeometry = new THREE.PlaneGeometry( 100, 100, 200 );
+	var planeMaterial = new THREE.MeshStandardMaterial( { color: 0x00ff00,
+																												side: THREE.DoubleSide } )
+	var plane = new THREE.Mesh( planeGeometry, planeMaterial );
+	plane.position.set(0, 0, -100);
+	plane.receiveShadow = true;
+	scene.add( plane );
+
+
+	// cylinder setup
+	var cylOne_Radius_Top = 10;
+	var cylTwo_Radius_Top = 10;
+	var cylThree_Radius_Top = 12;
+	var cylFour_Radius_Top = 11;
+
+	var cylOne_Radius_Bottom = 10;
+	var cylTwo_Radius_Bottom = 10;
+	var cylThree_Radius_Bottom = 12;
+	var cylFour_Radius_Bottom = 11;
+
+
+	var cylOne_Height = 30;
+	var cylTwo_Height = 25;
+	var cylThree_Height = 27;
+	var cylFour_Height = 29;
+
+	var cylOne_RadialSegs = 26;
+	var cylTwo_RadialSegs = 20;
+	var cylThree_RadialSegs = 30;
+	var cylFour_RadialSegs = 17;
+
+	var cylOne_HeightSegs = 2;
+	var cylTwo_HeightSegs = 1;
+	var cylThree_HeightSegs = 4;
+	var cylFour_HeightSegs = 1;
+
+	var cylOne_OpenEnded = false;
+	var cylTwo_OpenEnded = false;
+	var cylThree_OpenEnded  = false;
+	var cylFour_OpenEnded  = false;
+
+	var cylOne_ThetaStart = 4.8;
+	var cylTwo_ThetaStart = 27.8;
+	var cylThree_ThetaStart  = 9.3;
+	var cylFour_ThetaStart  = 120.3;
+
+	var cylOne_ThetaLen = Math.PI*2;
+	var cylTwo_ThetaLen = Math.PI*2;
+	var cylThree_ThetaLen  = Math.PI*3;
+	var cylFour_ThetaLen  = Math.PI*2;
+
+
+	//var radius = 22, tube = 12, radSegments = 20
+	//var tubeSegs = 60, arc = Math.PI * 2;
+	var cylinderOneMat = new THREE.MeshPhongMaterial(
+						{color: 0xffc0cb,
+							opacity: 0.3,
+							transparent: true
+						});
+
+	// cylinder one mesh and geometry
+	// this one is the transparent cylinder
+	var cylinderOne = new THREE.Mesh(
+		new THREE.CylinderGeometry(cylOne_Radius_Top,
+															cylOne_Radius_Bottom,
+															cylOne_Height,
+															cylOne_RadialSegs,
+															cylOne_HeightSegs,
+															cylOne_OpenEnded,
+															cylOne_ThetaStart,
+															cylOne_ThetaLen),
+														  cylinderOneMat);
+
+	cylinderOne.position.set(60, 40, 0);
+
+	// here is where we load the texture which is
+	// one of my art pieces
+	var txtrLoader = new THREE.TextureLoader();
+	var cylinderOneImg = new Image();
+	cylinderOneImg.crossOrigin = "imgbox";
+	cylinderOneImg.src = "https://thumbs2.imgbox.com/d6/b9/2McfdZTh_t.jpg";
+	var cylinderArt = cylinderOneImg.src
+	var cylMat = new THREE.MeshBasicMaterial({color: 0xffc0cb,
+														map: txtrLoader.load(cylinderArt)})
+
+	// cylinder two material, mesh, and geometry
+	var cylinderTwoMat = new THREE.MeshNormalMaterial();
+	var cylinderTwo = new THREE.Mesh(
+				new THREE.CylinderGeometry(cylTwo_Radius_Top,
+																	cylTwo_Radius_Bottom,
+																	cylTwo_Height,
+																	cylTwo_RadialSegs,
+																	cylTwo_HeightSegs,
+																	cylTwo_OpenEnded,
+																	cylTwo_ThetaStart,
+																	cylTwo_ThetaLen),
+																  cylMat);
+		// this one is the textured cylinder
+		// which is positioned to the left
+		cylinderTwo.position.set(-30, 40, 0);
+
+		// cylinder three material
+		var cylinderThreeMat = new THREE.MeshPhongMaterial({color: 0xff69b4,
+
+																												envMap: scene.bakcground,
+																												combine: THREE.MixOperation,
+																												reflectivity: .99
+
+																										});
+
+		// cylinder three mesh and geometry and position
+		// this is the shiny pink cylinder
+		var cylinderThree = new THREE.Mesh(
+			new THREE.CylinderGeometry(cylThree_Radius_Top,
+																cylThree_Radius_Bottom,
+																cylThree_Height,
+																cylThree_RadialSegs,
+																cylThree_HeightSegs,
+																cylThree_OpenEnded,
+																cylThree_ThetaStart,
+																cylThree_ThetaLen),
+																cylinderThreeMat);
+	 cylinderThree.format = THREE.RBGFormat;
+	 cylinderThree.mapping = THREE.CubeRefractionMapping;
+	 //scene.background = cylinderThree;
+	 cylinderThree.position.set(-40, -40, 0);
+
+	 // cylinder four material.  Lambert gave it a nice
+	 // solid color
+	 cylFourMat = new THREE.MeshLambertMaterial({color: 0xbbff00,
+		 																					side: THREE.DoubleSide,
+		 																					shininess: 0
+																						});
+
+		// cylinder four mesh, geometry, and position
+		// this is the green cylinder
+		var cylinderFour = new THREE.Mesh(
+			new THREE.CylinderGeometry(cylFour_Radius_Top,
+																cylFour_Radius_Bottom,
+																cylFour_Height,
+																cylFour_RadialSegs,
+																cylFour_HeightSegs,
+																cylFour_OpenEnded,
+																cylFour_ThetaStart,
+																cylFour_ThetaLen),
+																cylFourMat);
+	  cylinderFour.position.set(60, -40, 0);
+
+		// var dLtColor2 = 0xffc0cb;
+		// var dLtIntensity2 = 0;
+		// var dLight2 = new THREE.DirectionalLight(dLtColor,
+		// 																				dLtIntensity);
+
+		// add the objects and the texture to the scene
+		scene.add(cylinderArt);
+		scene.add(cylinderOne);
+		scene.add(cylinderTwo);
+		scene.add(cylinderThree);
+		scene.add(cylinderFour);
+
+		// dLight2.castShadow = false;
+		// dLight2.position.set(0, 0, 0);
+		// dLight2.target = cylinderTwo;
+		// scene.add(dLight2.target);
+
+	// ----------------------------------------------------------------------------------------
+	// END OF YOUR CUSTOM CODE FOR THE ASSIGNMENT
+	// The rendering functions that follow are standard and can be
+	// used for this assignment.
+	// You are welcome to customize them or create your own if you
+	// desire, however, you can
+	// simply use the code provided.
+	//
+
+	// Standard functions for rendering the scene.  Notice how we
+	// have the animate function
+	// which submits a call to requestAnimationFrame to
+	// call animate.   This creates a loop
+	// that will render the scene again whenever something within
+	// the scene changes.
+
+	function animate() {
+		requestAnimationFrame(animate);
+		// Here I decided to rotate at different speeds and directions
+		// or not including a direction as I did with cylinderFour
+		cylinderOne.rotation.y += 0.01;
+		cylinderOne.rotation.x += 0.01;
+		cylinderOne.rotation.z += 0.02;
+		cylinderTwo.rotation.y -= 0.01;
+		cylinderTwo.rotation.x -= 0.01;
+		cylinderTwo.rotation.z += 0.002;
+		cylinderThree.rotation.y += 0.01;
+		cylinderThree.rotation.x -= 0.01;
+		cylinderThree.rotation.z += 0.004;
+		cylinderFour.rotation.y -= 0.01;
+		cylinderFour.rotation.x += 0.01;
+		cylinderFour.rotation.z += 0.01;
+		// call the render function to update the
+		// camera and scene
+		render();
+	}
+
+	function render() {
+ 		cameraControls.update();
+		renderer.render(scene, camera);
+	}
+	animate();
+	</script>
+  </body>
 </html>
